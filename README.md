@@ -7,3 +7,5 @@ Inspired by https://mpetroff.net/2012/09/kindle-weather-display/
 ![kindle_display](kindle_display.jpeg)
 
 Credits for weather icons to [tchiro on deviantart](https://www.deviantart.com/tchiro/art/L-weather-icons-518602276)
+
+For a description on how I got that working, check [howto.md](../master/howto.md)
