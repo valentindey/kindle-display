@@ -73,28 +73,36 @@ def generate_svg(filename):
     departure_texts_ffr = [dep.get_text(now) for dep in departures_ffr[:6]]
 
     weather_forecast = get_forecast(ID_WEATHER_MILBERTSHOFEN)
-    # gets the current weather, and those in 24 and 48 hours
-    # for me that's good enough for a forecast for tomorrow and the day after
-    weather_infos_3day = [weather_forecast.weather_infos[0],
-                          weather_forecast.weather_infos[8],
-                          weather_forecast.weather_infos[16]]
+
+    # gets the current weather and that for the next two days at 6:00, 12:00 and 18:00
+    weather_info_current = weather_forecast.weather_infos[0]
+    anchor_idx = (now.hour / 3)
+    future_idx = [x - anchor_idx for x in [10, 12, 14, 18, 20, 22]]
+    weather_infos_tomorrow = [weather_forecast.weather_infos[i] for i in future_idx[:3]]
+    weather_infos_day_after_tomorrow = [weather_forecast.weather_infos[i] for i in future_idx[3:]]
 
     gen_svg(date_str=date_str, time_str=time_str,
             departure_texts_ms=departure_texts_ms,
             departure_texts_ffr=departure_texts_ffr,
-            weather_infos=weather_infos_3day,
+            weather_info_current=weather_info_current,
+            weather_infos_tomorrow=weather_infos_tomorrow,
+            weather_infos_day_after_tomorrow=weather_infos_day_after_tomorrow,
             filename=filename)
 
 
-def gen_svg(date_str, time_str, departure_texts_ms, departure_texts_ffr, weather_infos, filename):
+def gen_svg(date_str, time_str, departure_texts_ms, departure_texts_ffr,
+            weather_info_current, weather_infos_tomorrow, weather_infos_day_after_tomorrow,
+            filename):
     assert len(departure_texts_ms) <= 6, 'Can display max 6 departures for Moosacher Straße!'
     assert len(departure_texts_ffr) <= 6, 'Can display max 6 departures for Frankfurter Ring!'
-    assert len(weather_infos) == 3, 'Need 3 weather infos: today, tomorrow and day after tomorrow!'
 
     svg_root = ET.Element('svg', xmlns='http://www.w3.org/2000/svg', width='600', height='800',
                           **{'xmlns:xlink': 'http://www.w3.org/1999/xlink'})
 
     ET.SubElement(svg_root, 'rect', width='600', height='800', style='fill:white;stroke-width:5;stroke:rgb(0,0,0)')
+
+    def add_line(x1, y1, x2, y2):
+        ET.SubElement(svg_root, 'line', x1=str(x1), y1=str(y1), x2=str(x2), y2=str(y2), style='stroke:black;stroke-width:2')
 
     def add_text(text, x, y, font_size):
         attrs = {
@@ -124,29 +132,35 @@ def gen_svg(date_str, time_str, departure_texts_ms, departure_texts_ffr, weather
     add_text(time_str, x=480, y=20, font_size=70)
 
     add_text(u'Moosacher Straße', x=400, y=20, font_size=27)
-    ET.SubElement(svg_root, 'line', x1='395', y1='20', x2='395', y2='400', style='stroke:black;stroke-width:2')
+    add_line(x1=395, y1=20, x2=395, y2=400)
     for i, dep_ms in enumerate(departure_texts_ms):
         add_text(dep_ms, x=365 - (25 * i), y=20, font_size=20)
 
     add_text('Frankfurter Ring', x=200, y=20, font_size=27)
-    ET.SubElement(svg_root, 'line', x1='195', y1='20', x2='195', y2='400', style='stroke:black;stroke-width:2')
+    add_line(x1=195, y1=20, x2=195, y2=400)
     for i, dep_ffr in enumerate(departure_texts_ffr):
         add_text(dep_ffr, x=165 - (25 * i), y=20, font_size=20)
 
-    add_text('Heute', x=550, y=500, font_size=32)
-    add_image(weather_infos[0].icon_path, x=400, y=500, w=140, h=140)
-    add_text(weather_infos[0].temp_range, x=470, y=650, font_size=26)
-    add_text(weather_infos[0].description, x=370, y=500, font_size=26)
+    add_text('Aktuell', x=550, y=500, font_size=32)
+    add_image(weather_info_current.icon_path, x=400, y=500, w=140, h=140)
+    add_text(weather_info_current.temp_range, x=470, y=650, font_size=26)
+    add_text(weather_info_current.description, x=370, y=500, font_size=26)
 
-    add_text('Morgen', x=330, y=500, font_size=28)
-    add_image(weather_infos[1].icon_path, x=220, y=500, w=100, h=100)
-    add_text(weather_infos[1].temp_range, x=260, y=610, font_size=22)
-    add_text(weather_infos[1].description, x=190, y=500, font_size=22)
+    add_text('Morgen', x=310, y=500, font_size=28)
+    add_image(weather_infos_tomorrow[0].icon_path, x=220, y=500, w=80, h=80)
+    add_text(weather_infos_tomorrow[0].temp_range, x=205, y=510, font_size=18)
+    add_image(weather_infos_tomorrow[1].icon_path, x=220, y=590, w=80, h=80)
+    add_text(weather_infos_tomorrow[1].temp_range, x=205, y=600, font_size=18)
+    add_image(weather_infos_tomorrow[2].icon_path, x=220, y=680, w=80, h=80)
+    add_text(weather_infos_tomorrow[2].temp_range, x=205, y=690, font_size=18)
 
     add_text(u'Übermorgen', x=150, y=500, font_size=28)
-    add_image(weather_infos[2].icon_path, x=40, y=500, w=100, h=100)
-    add_text(weather_infos[2].temp_range, x=80, y=610, font_size=22)
-    add_text(weather_infos[2].description, x=10, y=500, font_size=22)
+    add_image(weather_infos_day_after_tomorrow[0].icon_path, x=60, y=500, w=80, h=80)
+    add_text(weather_infos_day_after_tomorrow[0].temp_range, x=45, y=510, font_size=18)
+    add_image(weather_infos_day_after_tomorrow[1].icon_path, x=60, y=590, w=80, h=80)
+    add_text(weather_infos_day_after_tomorrow[1].temp_range, x=45, y=600, font_size=18)
+    add_image(weather_infos_day_after_tomorrow[2].icon_path, x=60, y=680, w=80, h=80)
+    add_text(weather_infos_day_after_tomorrow[2].temp_range, x=45, y=690, font_size=18)
 
     tree = ET.ElementTree(svg_root)
 
