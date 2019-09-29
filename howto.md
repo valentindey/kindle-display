@@ -87,13 +87,21 @@ All of it goes to the kindle
     cd kindle-display
     scp -r kindle-display root@<YOUR_KINDLE_IP_HERE>:/mnt/us/extensions
 
-and on the kindle framework and power deamons are stopped and a new cronjob is started
+and on the kindle framework and power deamons need to be stopped in order to
+have wifi enabled at all time (obviously we need the internet connection) and
+avoid the screen being updated. To update the screen, we add our own cronjob.
+All this is done in the script `start_display.sh`.
 
     mntroot rw  # make the root filesystem writeable to be able to edit the crontab file
-    cd /mnt/root/extensions/kindle-display
+    cd /mnt/us/extensions/kindle-display
     ./start_display.sh
 
-To remove the cronjob, `remove_cronjob.sh` can be used.
+To remove the added cronjob later, `remove_cronjob.sh` can be used.
+
+I encountered some issues with the cron daemon not running the command after a restart
+of the kindle but could resolve them with a simple restart of the daemon
+
+    /etc/init.d/cron restart
 
 This calls the `display.sh` script which
 
