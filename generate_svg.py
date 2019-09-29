@@ -133,13 +133,19 @@ def gen_svg(date_str, time_str, departure_texts_ms, departure_texts_ffr,
 
     add_text(u'Moosacher Straße', x=400, y=20, font_size=27)
     add_line(x1=395, y1=20, x2=395, y2=400)
-    for i, dep_ms in enumerate(departure_texts_ms):
-        add_text(dep_ms, x=365 - (25 * i), y=20, font_size=20)
+    if not departure_texts_ms:
+        add_text(u'Anzeige derzeit nicht möglich.', x=365, y=20, font_size=27)
+    else:
+        for i, dep_ms in enumerate(departure_texts_ms):
+            add_text(dep_ms, x=365 - (25 * i), y=20, font_size=20)
 
     add_text('Frankfurter Ring', x=200, y=20, font_size=27)
     add_line(x1=195, y1=20, x2=195, y2=400)
-    for i, dep_ffr in enumerate(departure_texts_ffr):
-        add_text(dep_ffr, x=165 - (25 * i), y=20, font_size=20)
+    if not departure_texts_ffr:
+        add_text(u'Anzeige derzeit nicht möglich.', x=165, y=20, font_size=27)
+    else:
+        for i, dep_ffr in enumerate(departure_texts_ffr):
+            add_text(dep_ffr, x=165 - (25 * i), y=20, font_size=20)
 
     add_text('Aktuell', x=550, y=500, font_size=32)
     add_image(weather_info_current.icon_path, x=400, y=500, w=140, h=140)

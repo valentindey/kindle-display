@@ -29,6 +29,9 @@ class Departure:
 def get_departures(station_id, filter_only=None):
     response = requests.get("{BASE_URL}/departure/{station_id}".format(BASE_URL=BASE_URL, station_id=station_id),
                             headers=HEADERS)
+    if response.status_code != 200:
+        print('unable to get departures from mvg: http error {STATUS_CODE}'.format(STATUS_CODE=response.status_code))
+        return []
     j = response.json()
     departures = []
     for dep in j['departures']:
