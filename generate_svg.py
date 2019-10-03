@@ -7,11 +7,11 @@ from datetime import datetime
 
 import pytz
 
-from mvg import get_departures
+from bayern_fahrplan import get_departures
 from weather import get_forecast
 
-ID_MVG_FF_RING = 750
-ID_MVG_MOOSACHER_STR = 331
+ID_BF_FF_RING = '91000750'
+ID_BF_MOOSACHER_STR = '91000331'
 
 ID_WEATHER_MILBERTSHOFEN = 2871160
 
@@ -67,9 +67,9 @@ def generate_svg(filename):
 
     date_str, time_str = get_date_strings(now)
 
-    departures_ms = get_departures(ID_MVG_MOOSACHER_STR)
+    departures_ms = get_departures(ID_BF_MOOSACHER_STR)
     departure_texts_ms = [dep.get_text(now) for dep in departures_ms[:6]]
-    departures_ffr = get_departures(ID_MVG_FF_RING, filter_only='UBAHN')
+    departures_ffr = get_departures(ID_BF_FF_RING, ubahn_express_bus_only=True)
     departure_texts_ffr = [dep.get_text(now) for dep in departures_ffr[:6]]
 
     weather_forecast = get_forecast(ID_WEATHER_MILBERTSHOFEN)
@@ -102,7 +102,8 @@ def gen_svg(date_str, time_str, departure_texts_ms, departure_texts_ffr,
     ET.SubElement(svg_root, 'rect', width='600', height='800', style='fill:white;stroke-width:5;stroke:rgb(0,0,0)')
 
     def add_line(x1, y1, x2, y2):
-        ET.SubElement(svg_root, 'line', x1=str(x1), y1=str(y1), x2=str(x2), y2=str(y2), style='stroke:black;stroke-width:2')
+        ET.SubElement(svg_root, 'line', x1=str(x1), y1=str(y1), x2=str(x2), y2=str(y2),
+                      style='stroke:black;stroke-width:2')
 
     def add_text(text, x, y, font_size):
         attrs = {
