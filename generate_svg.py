@@ -3,7 +3,7 @@
 import base64
 import sys
 import xml.etree.cElementTree as ET
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytz
 
@@ -64,6 +64,9 @@ def get_date_strings(dt):
 
 def generate_svg(filename):
     now = datetime.now()
+    # adding one minute to account for some delays
+    # and make me reach the buses in time
+    now += timedelta(minutes=1)
 
     date_str, time_str = get_date_strings(now)
 
