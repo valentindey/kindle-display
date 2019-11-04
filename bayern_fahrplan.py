@@ -24,9 +24,12 @@ class Departure:
             mins_until = 0  # not necessarily true, bot an ok workaround for this use case
         else:
             mins_until = (self.departure_time - now).seconds / 60
-        return u'In {mins_until} Min: {line} Richtung {destination}'.format(mins_until=mins_until,
+        text = u'In {mins_until} Min: {line} Richtung {destination}'.format(mins_until=mins_until,
                                                                             line=self.line,
                                                                             destination=self.destination)
+        if len(text) > 40:
+            text = text[:38] + '...'
+        return text
 
 
 def get_departures(station_id, ubahn_express_bus_only=False):
