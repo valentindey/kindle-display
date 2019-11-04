@@ -42,6 +42,8 @@ def get_departures(station_id, ubahn_express_bus_only=False):
     table_body = table_elem.getElementsByTagName('tbody')[0]
     departures = []
     for table_row in table_body.childNodes[1:]:  # skipping the header
+        if len(table_row.childNodes) != 5:
+            continue  # skipping special announcements embedded in the table
         date_elem, time_elem, line_elem, dest_elem, platform_elem = table_row.childNodes
         line = elem_to_text(line_elem)
         if ubahn_express_bus_only and not (line.startswith('U') or line.startswith('X')):
