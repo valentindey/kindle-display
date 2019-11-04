@@ -5,6 +5,8 @@ from xml.dom.minidom import parseString
 
 import requests
 
+from local_time import as_cet
+
 BASE_URL = 'https://txt.bayern-fahrplan.de/textversion/bcl_abfahrtstafel'
 HEADERS = {
     'Accept': 'text/html',
@@ -32,8 +34,8 @@ class Departure:
         return text
 
 
-def get_departures(station_id, ubahn_express_bus_only=False):
-    form_data = get_form_data(station_id)
+def get_departures(station_id, date, ubahn_express_bus_only=False):
+    form_data = get_form_data(station_id, date)
     response = requests.post(BASE_URL, headers=HEADERS, data=form_data, verify=False)
     doc = parseString(response.content)
     # getElementById('') won't work, as the id is not known as such
@@ -55,9 +57,7 @@ def get_departures(station_id, ubahn_express_bus_only=False):
     return departures
 
 
-def get_form_data(station, date=None, limit=20):
-    if date is None:
-        date = datetime.now()
+def get_form_data(station, date, limit=20):
     return {
         'limit': limit,
         'useRealtime': 1,
@@ -88,4 +88,4 @@ def get_datetime(date_elem, time_elem):
     time_match = time_re.match(elem_to_text(time_elem))
     hour = int(time_match.group(1))
     minute = int(time_match.group(2))
-    return datetime(year=year, month=month, day=day, hour=hour, minute=minute)
+    return as_cet(datetime(year=year, month=month, day=day, hour=hour, minute=minute))

@@ -3,20 +3,16 @@
 import base64
 import sys
 import xml.etree.cElementTree as ET
-from datetime import datetime, timedelta
-
-import pytz
+from datetime import timedelta
 
 from bayern_fahrplan import get_departures
+from local_time import now_cet
 from weather import get_forecast
 
 ID_BF_FF_RING = '91000750'
 ID_BF_MOOSACHER_STR = '91000331'
 
 ID_WEATHER_MILBERTSHOFEN = 2871160
-
-UTC = pytz.timezone('UTC')
-CET = pytz.timezone('CET')
 
 DAYS_DE = {
     'Mon': 'Monatg',
@@ -44,35 +40,27 @@ MONTHS_DE = {
 }
 
 
-def get_date_strings(dt):
-    """translates a datetime into a German date string
-    setting the right locale would be easier in code (only datetime.strftime)
-    but a bigger hassle to install on the kindle
-    also this is not a very flexible way to handle the different time zones
-    but good enough for this
-    """
-    localized_utc = UTC.localize(dt)
-    localized_cet = localized_utc.astimezone(CET)
-    day_str = DAYS_DE[localized_cet.strftime('%a')]
-    month = MONTHS_DE[localized_cet.strftime('%b')]
-    day = localized_cet.day
-    hour = '{:02d}'.format(localized_cet.hour)
-    minute = '{:02d}'.format(localized_cet.minute)
+def get_date_strings(datetime_obj):
+    day_str = DAYS_DE[datetime_obj.strftime('%a')]
+    month = MONTHS_DE[datetime_obj.strftime('%b')]
+    day = datetime_obj.day
+    hour = '{:02d}'.format(datetime_obj.hour)
+    minute = '{:02d}'.format(datetime_obj.minute)
     return '{day_str}, {day}. {month}'.format(day_str=day_str, day=day, month=month), \
            '{hour}:{minute}'.format(hour=hour, minute=minute)
 
 
 def generate_svg(filename):
-    now = datetime.now()
+    now = now_cet()
     # adding one minute to account for some delays
     # and make me reach the buses in time
     now += timedelta(minutes=1)
 
     date_str, time_str = get_date_strings(now)
 
-    departures_ms = get_departures(ID_BF_MOOSACHER_STR)
+    departures_ms = get_departures(ID_BF_MOOSACHER_STR, now)
     departure_texts_ms = [dep.get_text(now) for dep in departures_ms[:6]]
-    departures_ffr = get_departures(ID_BF_FF_RING, ubahn_express_bus_only=True)
+    departures_ffr = get_departures(ID_BF_FF_RING, now, ubahn_express_bus_only=True)
     departure_texts_ffr = [dep.get_text(now) for dep in departures_ffr[:6]]
 
     weather_forecast = get_forecast(ID_WEATHER_MILBERTSHOFEN)
